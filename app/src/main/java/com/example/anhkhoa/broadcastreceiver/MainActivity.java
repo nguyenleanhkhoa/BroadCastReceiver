@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.ConnectivityManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,8 +19,6 @@ public class MainActivity extends AppCompatActivity {
     BroadcastReceiver broadcastReceiver=new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, final Intent intent) {
-
-
                 ConnectivityManager connectivityManager= (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
                 if(connectivityManager.getActiveNetworkInfo()!=null) {
                     Toast.makeText(context, "đã có mạng", Toast.LENGTH_SHORT).show();
@@ -49,6 +49,19 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+    BroadcastReceiver broadcastReceiverGPS=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE );
+            boolean statusOfGPS = manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if(statusOfGPS==false){
+                Toast.makeText(context, "GPS đã tắt", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(context, "GPS đã bật", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     @Override
     protected void onPause() {
@@ -57,14 +70,21 @@ public class MainActivity extends AppCompatActivity {
         if(broadcastReceiver!=null){
             unregisterReceiver(broadcastReceiver);
         }
+        if(broadcastReceiverGPS!=null){
+            unregisterReceiver(broadcastReceiverGPS);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Toast.makeText(this, "onResume", Toast.LENGTH_SHORT).show();
+
         IntentFilter filter=new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(broadcastReceiver,filter);
+
+        IntentFilter filter1=new IntentFilter(LocationManager.MODE_CHANGED_ACTION);
+        registerReceiver(broadcastReceiverGPS,filter1);
     }
 
     @Override
